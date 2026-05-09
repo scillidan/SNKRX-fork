@@ -26,9 +26,6 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
 
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
-  steam.friends.setRichPresence('steam_display', '#StatusFull')
-  steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
-
   self.floor = Group()
   self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
   self.post_main = Group()
