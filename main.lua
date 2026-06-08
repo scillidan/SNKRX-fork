@@ -7,6 +7,7 @@ require 'objects'
 require 'player'
 require 'enemies'
 require 'media'
+local settings = require 'settings'
 
 
 function init()
@@ -15,6 +16,13 @@ function init()
   input:bind('move_left', {'a', 'left', 'dpleft', 'm1'})
   input:bind('move_right', {'d', 'e', 's', 'right', 'dpright', 'm2'})
   input:bind('enter', {'space', 'return', 'fleft', 'fdown', 'fright'})
+
+  settings.setDefaultBinds({
+    move_left = {'a', 'left', 'dpleft', 'm1'},
+    move_right = {'d', 'e', 's', 'right', 'dpright', 'm2'},
+    enter = {'space', 'return', 'fleft', 'fdown', 'fright'},
+  })
+  settings.load()
 
   local s = {tags = {sfx}}
   artificer1 = Sound('458586__inspectorj__ui-mechanical-notification-01-fx.ogg', s)

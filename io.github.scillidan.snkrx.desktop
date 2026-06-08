@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=SNKRX
+Comment=A rogue-lite auto shooter
+Exec=snkrx.sh
+Icon=io.github.scillidan.snkrx
+Type=Application
+Categories=Game;ActionGame;

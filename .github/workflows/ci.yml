@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lunarmodules/luacheck@v1
+        with:
+          args: --codes --ranges .
+
+  build-love:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package .love
+        run: |
+          mkdir -p dist
+          cd $GITHUB_WORKSPACE
+          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua assets -x "*.git*" "engine/love*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snkrx-love
+          path: dist/snkrx.love
+
+  build-windows:
+    runs-on: windows-latest
+    needs: build-love
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: snkrx-love
+          path: dist
+      - name: Download LÖVE
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip" -OutFile "love-win64.zip"
+          Expand-Archive -Path "love-win64.zip" -DestinationPath "love-win64"
+      - name: Build Windows exe
+        run: |
+          Copy-Item "love-win64/love-11.5-win64/*" -Destination "dist/" -Recurse
+          $loveExe = "dist/love.exe"
+          $loveFile = "dist/snkrx.love"
+          $outputExe = "dist/snkrx.exe"
+          cmd /c "copy /b `"$loveExe`" + `"$loveFile`" `"$outputExe`""
+          Remove-Item "dist/love.exe" -ErrorAction SilentlyContinue
+          Remove-Item "dist/lovec.exe" -ErrorAction SilentlyContinue
+          Remove-Item "dist/snkrx.love" -ErrorAction SilentlyContinue
+      - name: Zip Windows build
+        run: |
+          Compress-Archive -Path "dist/*" -DestinationPath "snkrx-windows.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snkrx-windows
+          path: snkrx-windows.zip
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-love, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: snkrx-love
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: snkrx-windows
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/snkrx.love
+            artifacts/snkrx-windows.zip
