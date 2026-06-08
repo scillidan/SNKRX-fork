@@ -82,10 +82,32 @@ function engine_run(config)
   love.graphics.setBackgroundColor(0, 0, 0, 1)
   love.graphics.setColor(1, 1, 1, 1)
   love.joystick.loadGamepadMappings("engine/gamecontrollerdb.txt")
+
+  if love.resize then
+    local old_resize = love.resize
+    function love.resize(w, h)
+      old_resize(w, h)
+    end
+  else
+    function love.resize(w, h)
+      local new_sx, new_sy = math.floor(w/gw), math.floor(h/gh)
+      if new_sx < 1 then new_sx = 1 end
+      if new_sy < 1 then new_sy = 1 end
+      sx, sy = new_sx, new_sy
+    end
+  end
   graphics.set_line_style(config.line_style or "rough")
   graphics.set_default_filter(config.default_filter or "nearest", config.default_filter or "nearest", anisotropy or 0)
 
-  combine = Shader("default.vert", "combine.frag")
+  local Touch = require 'engine/game/touch_controls'
+  touch = Touch:new()
+  if touch:isMobile() then
+    touch:activate()
+    local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
+    touch:addButton("OK", sw - 60, sh - 60, 35,
+      function() input:send('enter') end,
+      function() end)
+  end
   replace = Shader("default.vert", "replace.frag")
   full_combine = Shader("default.vert", "full_combine.frag")
 
@@ -138,7 +160,10 @@ function engine_run(config)
         elseif name == "gamepadpressed" then input.gamepad_state[input.index_to_gamepad_button[b]] = true; input.last_key_pressed = input.index_to_gamepad_button[b]
         elseif name == "gamepadreleased" then input.gamepad_state[input.index_to_gamepad_button[b]] = false
         elseif name == "gamepadaxis" then input.gamepad_axis[input.index_to_gamepad_axis[b]] = c
-        elseif name == "textinput" then input:textinput(a) end
+        elseif name == "textinput" then input:textinput(a)
+        elseif name == "touchpressed" then if touch then touch:touchpressed(a, b, c) end
+        elseif name == "touchmoved" then if touch then touch:touchmoved(a, b, c) end
+        elseif name == "touchreleased" then if touch then touch:touchreleased(a, b, c) end end
       end
     end
 
@@ -153,6 +178,7 @@ function engine_run(config)
       local mx, my = love.mouse.getPosition()
       mouse:set(mx/sx, my/sy)
       mouse_dt:set(mouse.x - last_mouse.x, mouse.y - last_mouse.y)
+      if touch then touch:update() end
       update(fixed_dt)
       system.update()
       input.last_key_pressed = nil
@@ -165,6 +191,7 @@ function engine_run(config)
       love.graphics.origin()
       love.graphics.clear(love.graphics.getBackgroundColor())
       draw()
+      if touch then touch:draw() end
       love.graphics.present()
     end
 

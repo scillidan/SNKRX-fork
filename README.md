@@ -1,21 +1,43 @@
 # SNKRX-fork
 
-A rogue-lite auto shooter.
+Original by [adn](https://github.com/a327ex/SNKRX) · Fork by scillidan · License: MIT
+
+A rogue-lite auto shooter where you control a snake of heroes.
 
 ## Requirements
 
-- LÖVE 11.3 [Mysterious Mysteries] (Released: 2019-10-27)
+- **LÖVE 11.5** (Mysterious Mysteries, 2023)
 
 ## Running
 
-```
+```bash
 engine/love/love.exe --console .
 ```
 
 ## Building
 
-```
+```bash
 make
 ```
 
 Outputs to `dist/` directory.
+
+## Changes from upstream
+
+- Upgraded from LÖVE 11.3 to 11.5
+- Added dynamic screen resizing with `love.resize` callback
+- Added key rebinding system (`settings.lua` with persistent save)
+- Added touch controls for mobile (virtual joystick + action buttons)
+- Added Android config (`t.accelerometerjoystick`, `t.externalstorage`)
+- Added GitHub Actions CI (lint, build, release)
+- Added Flathub/Scoop/F-Droid packaging manifests
+
+## Controls
+
+| Action | Keyboard | Gamepad | Touch |
+|--------|----------|---------|-------|
+| Move left | A / Left / Left click | D-pad left | Left side tap/swipe |
+| Move right | D/E/S / Right / Right click | D-pad right | Right side tap/swipe |
+| Confirm | Space / Enter | A/B/X | OK button |
+
+Key bindings can be customized and are saved automatically.
