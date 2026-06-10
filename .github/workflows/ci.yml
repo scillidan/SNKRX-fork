@@ -46,11 +46,19 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip" -OutFile "love-win64.zip"
           Expand-Archive -Path "love-win64.zip" -DestinationPath "love-win64"
+      - name: Debug - List files
+        run: |
+          Write-Host "=== dist contents ==="
+          Get-ChildItem -Path "dist" -Recurse
+          Write-Host "=== love-win64 contents ==="
+          Get-ChildItem -Path "love-win64" -Recurse
       - name: Build Windows exe
         run: |
           Copy-Item "love-win64/love-11.5-win64/*" -Destination "dist/" -Recurse
           $loveExe = "dist/love.exe"
           $loveFile = "dist/snkrx.love"
+          if (-not (Test-Path $loveExe)) { throw "love.exe not found" }
+          if (-not (Test-Path $loveFile)) { throw "snkrx.love not found" }
           $outputExe = "dist/snkrx.exe"
           cmd /c "copy /b `"$loveExe`" + `"$loveFile`" `"$outputExe`""
           Remove-Item "dist/love.exe" -ErrorAction SilentlyContinue
