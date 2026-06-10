@@ -3,6 +3,7 @@ max_line_length = 120
 
 exclude_files = {
     "engine/love/",
+    "engine/external/",
 }
 
 globals = {
@@ -83,6 +84,7 @@ ignore = {
     "411",
     "421",
     "231",
+    "232",
     "311",
     "611",
     "612",
