@@ -54,13 +54,18 @@ jobs:
           Get-ChildItem -Path "love-win64" -Recurse
       - name: Build Windows exe
         run: |
-          Copy-Item "love-win64/love-11.5-win64/*" -Destination "dist/" -Recurse
-          $loveExe = "dist/love.exe"
-          $loveFile = "dist/snkrx.love"
+          Copy-Item "love-win64\love-11.5-win64\*" -Destination "dist\" -Recurse
+          $loveExe = "dist\love.exe"
+          $loveFile = "dist\snkrx.love"
           if (-not (Test-Path $loveExe)) { throw "love.exe not found" }
           if (-not (Test-Path $loveFile)) { throw "snkrx.love not found" }
-          $outputExe = "dist/snkrx.exe"
-          cmd /c "copy /b `"$loveExe`" + `"$loveFile`" `"$outputExe`""
+          $outputExe = "dist\snkrx.exe"
+          $loveBytes = [System.IO.File]::ReadAllBytes($loveExe)
+          $gameBytes = [System.IO.File]::ReadAllBytes($loveFile)
+          $combined = New-Object byte[] ($loveBytes.Length + $gameBytes.Length)
+          [Array]::Copy($loveBytes, $combined, $loveBytes.Length)
+          [Array]::Copy($gameBytes, 0, $combined, $loveBytes.Length, $gameBytes.Length)
+          [System.IO.File]::WriteAllBytes($outputExe, $combined)
           Remove-Item "dist/love.exe" -ErrorAction SilentlyContinue
           Remove-Item "dist/lovec.exe" -ErrorAction SilentlyContinue
           Remove-Item "dist/snkrx.love" -ErrorAction SilentlyContinue
