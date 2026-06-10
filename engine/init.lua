@@ -43,6 +43,14 @@ if not path:find("init") then
   require(path .. ".game.hitfx")
 end
 
+function getLetterboxOffset()
+  local w, h = love.graphics.getWidth(), love.graphics.getHeight()
+  local scale = math.min(w/gw, h/gh)
+  local offset_x = (w - gw*scale)/2
+  local offset_y = (h - gh*scale)/2
+  return offset_x, offset_y, scale
+end
+
 function engine_run(config)
   if not web then
     love.filesystem.setIdentity(config.game_name)
