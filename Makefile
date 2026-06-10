@@ -1,8 +1,8 @@
 GAME_NAME := snkrx
-LOVE_VERSION := 11.5
+LOVE_VERSION := 11.3
 DIST_DIR := dist
 BUILD_DIR := build
-LOVE_DIR := love
+LOVE_DIR := engine/love
 
 .PHONY: all clean lint run windows linux linux-arm
 
