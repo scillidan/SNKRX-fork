@@ -23,8 +23,8 @@ $(DIST_DIR):
 $(BUILD_DIR)/$(GAME_NAME).love: | $(BUILD_DIR)
 	@cd . && zip -r $(BUILD_DIR)/$(GAME_NAME).love arena.lua buy_screen.lua conf.lua enemies.lua main.lua mainmenu.lua media.lua objects.lua player.lua shared.lua engine assets -x "*.git*"
 
-run: $(BUILD_DIR)/$(GAME_NAME).love
-	@love $(BUILD_DIR)
+run:
+	@love .
 
 windows: $(BUILD_DIR)/$(GAME_NAME).love $(DIST_DIR)
 	@echo "Building Windows executable..."
