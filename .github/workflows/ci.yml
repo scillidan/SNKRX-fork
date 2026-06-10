@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p dist
           cd $GITHUB_WORKSPACE
-          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua assets -x "*.git*" "engine/love*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
+          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
       - uses: actions/upload-artifact@v4
         with:
           name: snkrx-love
