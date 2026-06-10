@@ -89,10 +89,12 @@ function shared_draw(draw_action)
     shadow_shader:unset()
   end)
 
-  local x, y = 0, 0
-  background_canvas:draw(x, y, 0, sx, sy)
-  shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, 0, sx, sy)
-  main_canvas:draw(x, y, 0, sx, sy)
+  local ox, oy, s = getLetterboxOffset()
+  love.graphics.setColor(0, 0, 0)
+  love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+  background_canvas:draw(ox, oy, 0, s, s)
+  shadow_canvas:draw(ox + 1.5*s, oy + 1.5*s, 0, s, s)
+  main_canvas:draw(ox, oy, 0, s, s)
 end
 
 
