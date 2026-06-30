@@ -7,12 +7,17 @@ on:
   pull_request:
     branches: [main]
 
+permissions: {}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: lunarmodules/luacheck@v1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v6
+        with:
+          persist-credentials: false
+      - uses: lunarmodules/luacheck@a4fd9e8a7b05be0163d7626e4a30e54eefc3bd06  # v1
         with:
           args: --codes --ranges .
 
@@ -20,14 +25,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions: {}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v6
+        with:
+          persist-credentials: false
       - name: Package .love
         run: |
           mkdir -p dist
           cd $GITHUB_WORKSPACE
           zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: snkrx-love
           path: dist/snkrx.love
@@ -36,13 +44,16 @@ jobs:
     runs-on: windows-latest
     needs: build-love
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@95815c38cf36119d9dede3bcdceb8f4541db4b4f  # v4
         with:
           name: snkrx-love
           path: dist
-      - name: Download LÖVE
+      - name: Download LOVE
         run: |
           Invoke-WebRequest -Uri "https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip" -OutFile "love-win64.zip"
           Expand-Archive -Path "love-win64.zip" -DestinationPath "love-win64"
@@ -72,7 +83,7 @@ jobs:
       - name: Zip Windows build
         run: |
           Compress-Archive -Path "dist/*" -DestinationPath "snkrx-windows.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: snkrx-windows
           path: snkrx-windows.zip
@@ -84,16 +95,20 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@95815c38cf36119d9dede3bcdceb8f4541db4b4f  # v4
         with:
           name: snkrx-love
           path: artifacts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@95815c38cf36119d9dede3bcdceb8f4541db4b4f  # v4
         with:
           name: snkrx-windows
           path: artifacts
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            artifacts/snkrx.love
-            artifacts/snkrx-windows.zip
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF#refs/tags/}" \
+            artifacts/snkrx.love \
+            artifacts/snkrx-windows.zip \
+            --title "${GITHUB_REF#refs/tags/}" \
+            --generate-notes
