@@ -27,17 +27,15 @@ Outputs to `dist/` directory.
 - Upgraded from LÖVE 11.3 to 11.5
 - Added dynamic screen resizing with `love.resize` callback
 - Added key rebinding system (`settings.lua` with persistent save)
-- Added touch controls for mobile (virtual joystick + action buttons)
-- Added Android config (`t.accelerometerjoystick`, `t.externalstorage`)
 - Added GitHub Actions CI (lint, build, release)
-- Added Flathub/Scoop/F-Droid packaging manifests
+- Added Flathub/Scoop packaging manifests
 
 ## Controls
 
-| Action | Keyboard | Gamepad | Touch |
-|--------|----------|---------|-------|
-| Move left | A / Left / Left click | D-pad left | Left side tap/swipe |
-| Move right | D/E/S / Right / Right click | D-pad right | Right side tap/swipe |
-| Confirm | Space / Enter | A/B/X | OK button |
+| Action | Keyboard | Gamepad |
+|--------|----------|---------|
+| Move left | A / Left / Left click | D-pad left |
+| Move right | D/E/S / Right / Right click | D-pad right |
+| Confirm | Space / Enter | A/B/X |
 
 Key bindings can be customized and are saved automatically.

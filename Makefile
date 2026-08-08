@@ -1,5 +1,5 @@
 GAME_NAME := snkrx
-LOVE_VERSION := 11.3
+LOVE_VERSION := 11.5
 DIST_DIR := dist
 BUILD_DIR := build
 LOVE_DIR := engine/love

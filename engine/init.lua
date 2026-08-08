@@ -109,13 +109,6 @@ function engine_run(config)
 
   local Touch = require 'engine/game/touch_controls'
   touch = Touch:new()
-  if touch:isMobile() then
-    touch:activate()
-    local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
-    touch:addButton("OK", sw - 60, sh - 60, 35,
-      function() input:send('enter') end,
-      function() end)
-  end
   replace = Shader("default.vert", "replace.frag")
   full_combine = Shader("default.vert", "full_combine.frag")
 

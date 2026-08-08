@@ -10,9 +10,7 @@ Original by [adn](https://github.com/a327ex/SNKRX) · Fork by scillidan · Licen
 | Virtual resolution | 480x270 (16:9), canvas + float scaling |
 | Input | Keyboard + Mouse + Gamepad (custom engine Input) |
 | Key rebinding | None (hardcoded in main.lua), listed in TODO |
-| Touch support | None |
 | Build targets | Windows, Linux, Linux-ARM, Web (love-js) |
-| Android | Not supported |
 
 ---
 
@@ -49,29 +47,7 @@ Current: hardcoded in main.lua lines 15-17. TODO file explicitly lists this as n
 - [ ] Gamepad button remapping
 - [ ] Preset profiles (QWERTY, AZERTY, Dvorak, custom)
 
-### 1.4 Touch Support (Mobile)
-
-SNKRX controls are simpler than BYTEPATH: only left/right movement + confirm.
-
-- [ ] Create touch_controls.lua module:
-  - Left side: swipe/hold for move_left
-  - Right side: swipe/hold for move_right
-  - Tap anywhere: enter/confirm
-  - Pause button: top-right
-- [ ] Alternative: tilt-to-move via accelerometer (love.accelerometerjoystick if enabled)
-- [ ] Hook love.touchpressed/touchmoved/touchreleased into engine Input system
-- [ ] Auto-detect via love.system.getOS()
-- [ ] Draw semi-transparent touch zones overlay
-- [ ] Adjust for SNKRX's auto-shooter gameplay (less buttons needed)
-
-### 1.5 Android conf.lua
-
-- [ ] t.accelerometerjoystick = true (optional tilt control)
-- [ ] t.externalstorage = true
-- [ ] t.window.display = 1
-- [ ] Test save directory on Android
-
-### 1.6 Web Build Polish
+### 1.4 Web Build Polish
 
 Already has love-js build script but may need updates.
 
@@ -91,7 +67,6 @@ Already has love-js build script but may need updates.
 | Windows 10/11 | x64 fused exe | High |
 | Linux X11 | Flatpak | High |
 | Linux Wayland | Flatpak | High |
-| Android 10+ | ARM64 APK | High |
 | Web | Chrome/Firefox | Medium |
 | Steam Deck | Flatpak | Medium |
 
@@ -103,7 +78,6 @@ Already has love-js build script but may need updates.
 - [ ] Fullscreen toggle
 - [ ] Window resize (desktop)
 - [ ] Gamepad connect/disconnect
-- [ ] Touch controls (mobile/web)
 - [ ] Save / Load (state.txt persistence)
 - [ ] Class selection and set bonuses
 - [ ] Options menu (video + sound)
@@ -116,14 +90,13 @@ Already has love-js build script but may need updates.
 | FPS | >= 60 sustained |
 | Memory | < 400 MB |
 | Startup | < 3 sec |
-| APK size | < 40 MB |
+| Bundle size | < 40 MB |
 
 ### 2.4 CI (GitHub Actions)
 
 - [ ] Luacheck lint on push
 - [ ] Build .love on tag
 - [ ] Build Windows zip on tag
-- [ ] Build Android APK on tag
 - [ ] Build Flatpak on tag
 - [ ] Build web (love-js) on tag
 - [ ] Auto GitHub Release with all artifacts
@@ -140,17 +113,7 @@ Strategy: self-contained bucket.
 2. [ ] Write manifest snkrx.json (version, url, hash, bin, shortcuts, autoupdate)
 3. [ ] Users: `scoop bucket add snkrx <repo> && scoop install snkrx`
 
-### 3.2 F-Droid (Android)
-
-Prerequisite: FOSS (MIT OK).
-
-1. [ ] Build fused APK via love-android
-2. [ ] Fork fdroiddata on GitLab
-3. [ ] Write metadata/io.github.scillidan.snkrx.yml
-4. [ ] Local verify: fdroid build
-5. [ ] Submit MR
-
-### 3.3 Flathub (Linux)
+### 3.2 Flathub (Linux)
 
 1. [ ] Prepare: manifest yml + metainfo.xml + .desktop + SVG icon
 2. [ ] App ID: io.github.scillidan.snkrx
@@ -158,7 +121,7 @@ Prerequisite: FOSS (MIT OK).
 4. [ ] Local build + lint pass
 5. [ ] Fork flathub/flathub, open PR
 
-### 3.4 Itch.io (Web)
+### 3.3 Itch.io (Web)
 
 Already partially set up (love-js build script exists).
 
@@ -174,12 +137,10 @@ Already partially set up (love-js build script exists).
 #1  LÖVE 11.3 -> 11.5 upgrade + verify
 #2  Screen adaptation (love.resize + letterbox)
 #3  Key rebinding system
-#4  Touch support + Android conf
-#5  Web build polish (touch + memory)
-#6  CI setup (GitHub Actions)
-#7  Scoop bucket + manifest
-#8  F-Droid metadata + APK
-#9  Flathub manifest + metainfo
-#10 Itch.io web deployment
-#11 GitHub Release automation
+#4  Web build polish (touch + memory)
+#5  CI setup (GitHub Actions)
+#6  Scoop bucket + manifest
+#7  Flathub manifest + metainfo
+#8  Itch.io web deployment
+#9  GitHub Release automation
 ```
