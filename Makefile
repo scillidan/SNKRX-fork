@@ -21,7 +21,7 @@ $(DIST_DIR):
 	@mkdir -p $(DIST_DIR)
 
 $(BUILD_DIR)/$(GAME_NAME).love: | $(BUILD_DIR)
-	@cd . && zip -r $(BUILD_DIR)/$(GAME_NAME).love arena.lua buy_screen.lua conf.lua enemies.lua main.lua mainmenu.lua media.lua objects.lua player.lua shared.lua engine assets -x "*.git*"
+	@cd . && zip -r $(BUILD_DIR)/$(GAME_NAME).love arena.lua buy_screen.lua conf.lua enemies.lua main.lua mainmenu.lua media.lua objects.lua player.lua shared.lua settings.lua engine assets -x "*.git*"
 
 run:
 	@love .

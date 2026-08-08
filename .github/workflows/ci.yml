@@ -2,10 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     tags: ['v*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -21,6 +22,98 @@ jobs:
         with:
           args: --codes --ranges .
 
+  build-windows:
+    runs-on: windows-latest
+    needs: lint
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions: {}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
+        with:
+          persist-credentials: false
+          ref: dev
+      - name: Package .love
+        run: |
+          mkdir dist
+          $paths = 'conf.lua','main.lua','shared.lua','arena.lua','buy_screen.lua','mainmenu.lua','objects.lua','player.lua','enemies.lua','media.lua','settings.lua','engine','assets' | Where-Object { Test-Path $_ }
+          Compress-Archive -Path $paths -DestinationPath dist\snkrx.zip
+          Rename-Item dist\snkrx.zip snkrx.love
+        shell: pwsh
+      - name: Download LOVE
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip" -OutFile "love-win64.zip"
+          Expand-Archive -Path "love-win64.zip" -DestinationPath "love-win64"
+      - name: Build Windows exe
+        run: |
+          Copy-Item "love-win64\love-11.5-win64\*" -Destination "dist\" -Recurse
+          $loveExe = "dist\love.exe"
+          $loveFile = "dist\snkrx.love"
+          $outputExe = "dist\snkrx.exe"
+          cmd /c "copy /b `"$loveExe`" + `"$loveFile`" `"$outputExe`""
+          Remove-Item "dist\love.exe" -ErrorAction SilentlyContinue
+          Remove-Item "dist\lovec.exe" -ErrorAction SilentlyContinue
+          Remove-Item "dist\snkrx.love" -ErrorAction SilentlyContinue
+          Compress-Archive -Path "dist\*" -DestinationPath "snkrx-love11.5-windows-x86_64.zip"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: snkrx-love11.5-windows-x86_64
+          path: snkrx-love11.5-windows-x86_64.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions: {}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
+        with:
+          persist-credentials: false
+          ref: dev
+      - name: Package .love
+        run: |
+          mkdir -p dist
+          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua settings.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
+      - name: Build Linux AppImage (11.5)
+        run: |
+          wget -q "https://github.com/love2d/love/releases/download/11.5/love-11.5-x86_64.AppImage" -O love.AppImage
+          chmod +x love.AppImage
+          cd dist
+          cat ../love.AppImage snkrx.love > snkrx-love11.5-linux-x86_64.AppImage
+          chmod +x snkrx-love11.5-linux-x86_64.AppImage
+          rm snkrx.love
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: snkrx-love11.5-linux-x86_64
+          path: dist/snkrx-love11.5-linux-x86_64.AppImage
+
+  build-linux-aarch64:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions: {}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
+        with:
+          persist-credentials: false
+          ref: dev
+      - name: Package .love for aarch64
+        run: |
+          mkdir -p dist
+          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua settings.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
+      - name: Build aarch64 .love bundle
+        run: |
+          cd dist
+          echo '#!/bin/sh' > snkrx.sh
+          echo 'if ! command -v love &> /dev/null; then echo "LOVE 11.5 is required: https://love2d.org"; exit 1; fi' >> snkrx.sh
+          echo 'SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"' >> snkrx.sh
+          echo 'love "$SCRIPT_DIR/snkrx.love"' >> snkrx.sh
+          chmod +x snkrx.sh
+          zip ../snkrx-love11.5-linux-aarch64.zip snkrx.love snkrx.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: snkrx-love11.5-linux-aarch64
+          path: snkrx-love11.5-linux-aarch64.zip
+
   build-love:
     runs-on: ubuntu-latest
     needs: lint
@@ -30,67 +123,19 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
         with:
           persist-credentials: false
+          ref: dev
       - name: Package .love
         run: |
           mkdir -p dist
-          cd $GITHUB_WORKSPACE
-          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
+          zip -r dist/snkrx-love11.5.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua settings.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
-          name: snkrx-love
-          path: dist/snkrx.love
-
-  build-windows:
-    runs-on: windows-latest
-    needs: build-love
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions: {}
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with:
-          name: snkrx-love
-          path: dist
-      - name: Download LOVE
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip" -OutFile "love-win64.zip"
-          Expand-Archive -Path "love-win64.zip" -DestinationPath "love-win64"
-      - name: Debug - List files
-        run: |
-          Write-Host "=== dist contents ==="
-          Get-ChildItem -Path "dist" -Recurse
-          Write-Host "=== love-win64 contents ==="
-          Get-ChildItem -Path "love-win64" -Recurse
-      - name: Build Windows exe
-        run: |
-          Copy-Item "love-win64\love-11.5-win64\*" -Destination "dist\" -Recurse
-          $loveExe = "dist\love.exe"
-          $loveFile = "dist\snkrx.love"
-          if (-not (Test-Path $loveExe)) { throw "love.exe not found" }
-          if (-not (Test-Path $loveFile)) { throw "snkrx.love not found" }
-          $outputExe = "dist\snkrx.exe"
-          $loveBytes = [System.IO.File]::ReadAllBytes($loveExe)
-          $gameBytes = [System.IO.File]::ReadAllBytes($loveFile)
-          $combined = New-Object byte[] ($loveBytes.Length + $gameBytes.Length)
-          [Array]::Copy($loveBytes, $combined, $loveBytes.Length)
-          [Array]::Copy($gameBytes, 0, $combined, $loveBytes.Length, $gameBytes.Length)
-          [System.IO.File]::WriteAllBytes($outputExe, $combined)
-          Remove-Item "dist/love.exe" -ErrorAction SilentlyContinue
-          Remove-Item "dist/lovec.exe" -ErrorAction SilentlyContinue
-          Remove-Item "dist/snkrx.love" -ErrorAction SilentlyContinue
-      - name: Zip Windows build
-        run: |
-          Compress-Archive -Path "dist/*" -DestinationPath "snkrx-windows.zip"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
-        with:
-          name: snkrx-windows
-          path: snkrx-windows.zip
+          name: snkrx-love11.5-love
+          path: dist/snkrx-love11.5.love
 
   release:
     runs-on: ubuntu-latest
-    needs: [build-love, build-windows]
+    needs: [build-windows, build-linux, build-linux-aarch64, build-love]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -98,20 +143,16 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
         with:
           persist-credentials: false
+          ref: dev
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
-          name: snkrx-love
           path: artifacts
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with:
-          name: snkrx-windows
-          path: artifacts
+          merge-multiple: true
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${GITHUB_REF#refs/tags/}" \
-            artifacts/snkrx.love \
-            artifacts/snkrx-windows.zip \
+            artifacts/* \
             --title "${GITHUB_REF#refs/tags/}" \
             --generate-notes
