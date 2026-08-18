@@ -43,6 +43,16 @@ if not path:find("init") then
   require(path .. ".game.hitfx")
 end
 
+-- True on ARM/ARM64 Linux handhelds (GPi CASE 2, PocketTerm35, ...). These have
+-- a small fixed panel, no usable desktop mouse, and their keyboard/D-pad is the
+-- main input, so the game should always open fullscreen and stay that way.
+function is_handheld_device()
+  if love.system.getOS() ~= 'Linux' then return false end
+  local ok, ffi = pcall(require, 'ffi')
+  if not ok then return false end
+  return ffi.arch == 'arm' or ffi.arch == 'arm64'
+end
+
 function getLetterboxOffset()
   local w, h = love.graphics.getWidth(), love.graphics.getHeight()
   local scale = math.min(w/gw, h/gh)
@@ -71,9 +81,24 @@ function engine_run(config)
     sx, sy = window_width/(config.game_width or 480), window_height/(config.game_height or 270)
     ww, wh = window_width, window_height
 
-    if state.sx and state.sy then
-      sx, sy = state.sx, state.sy
-      love.window.setMode(state.sx*gw, state.sy*gh, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
+    if is_handheld_device() then
+      -- Handheld (GPi CASE 2 / PocketTerm): ignore any persisted window size that
+      -- might be larger than the panel, and always open fullscreen covering the
+      -- whole display. The D-pad/keyboard is the primary input, so force mouse
+      -- control off (otherwise the snake ignores the arrow keys).
+      state.mouse_control = false
+      state.fullscreen = true
+      sx, sy = window_width/gw, window_height/gh
+      state.sx, state.sy = sx, sy
+      love.window.setMode(window_width, window_height, {vsync = config.vsync, msaa = msaa or 0, display = config.display, fullscreen = true, borderless = true, resizable = false, x = 0, y = 0})
+    elseif state.sx and state.sy then
+      -- Clamp the persisted window size to the display so it can never come up
+      -- larger than the screen (which looks like a zoomed top-left corner).
+      sx, sy = math.min(state.sx, window_width/gw), math.min(state.sy, window_height/gh)
+      if sx < 1 then sx = 1 end
+      if sy < 1 then sy = 1 end
+      state.sx, state.sy = sx, sy
+      love.window.setMode(math.floor(sx*gw), math.floor(sy*gh), {vsync = config.vsync, msaa = msaa or 0, display = config.display})
     else
       state.sx, state.sy = sx, sy
       love.window.setMode(window_width, window_height, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
@@ -98,10 +123,13 @@ function engine_run(config)
     end
   else
     function love.resize(w, h)
-      local new_sx, new_sy = math.floor(w/gw), math.floor(h/gh)
-      if new_sx < 1 then new_sx = 1 end
-      if new_sy < 1 then new_sy = 1 end
-      sx, sy = new_sx, new_sy
+      sx, sy = w/gw, h/gh
+      if sx < 1 then sx = 1 end
+      if sy < 1 then sy = 1 end
+      ww, wh = w, h
+      if not is_handheld_device() then
+        state.sx, state.sy = sx, sy
+      end
     end
   end
   graphics.set_line_style(config.line_style or "rough")

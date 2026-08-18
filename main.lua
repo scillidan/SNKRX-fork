@@ -24,6 +24,10 @@ function init()
   })
   settings.load()
 
+  if is_handheld_device() then
+    input:bind('escape', {'escape', 'select', 'back', 'start'})
+  end
+
   local s = {tags = {sfx}}
   artificer1 = Sound('458586__inspectorj__ui-mechanical-notification-01-fx.ogg', s)
   explosion1 = Sound('Explosion Grenade_04.ogg', s)
@@ -1816,7 +1820,7 @@ function update(dt)
   ]]--
 
   if input.k.pressed then
-    if sx > 1 and sy > 1 then
+    if not is_handheld_device() and sx > 1 and sy > 1 then
       sx, sy = sx - 0.5, sy - 0.5
       love.window.setMode(480*sx, 270*sy)
       state.sx, state.sy = sx, sy
@@ -1824,8 +1828,10 @@ function update(dt)
     end
   end
 
-  if input.l.pressed then
+  if input.l.pressed and not is_handheld_device() then
     sx, sy = sx + 0.5, sy + 0.5
+    local dw, dh = love.window.getDesktopDimensions()
+    sx, sy = math.min(sx, dw/gw), math.min(sy, dh/gh)
     love.window.setMode(480*sx, 270*sy)
     state.sx, state.sy = sx, sy
     state.fullscreen = false
@@ -1993,6 +1999,7 @@ function open_options(self)
     end}
 
     self.video_button_1 = Button{group = self.ui, x = gw/2 - 136, y = gh - 125, force_update = true, button_text = 'window size-', fg_color = 'bg10', bg_color = 'bg', action = function()
+      if is_handheld_device() then return end
       if sx > 1 and sy > 1 then
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         sx, sy = sx - 0.5, sy - 0.5
@@ -2003,8 +2010,11 @@ function open_options(self)
     end}
 
     self.video_button_2 = Button{group = self.ui, x = gw/2 - 50, y = gh - 125, force_update = true, button_text = 'window size+', fg_color = 'bg10', bg_color = 'bg', action = function()
+      if is_handheld_device() then return end
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       sx, sy = sx + 0.5, sy + 0.5
+      local dw, dh = love.window.getDesktopDimensions()
+      sx, sy = math.min(sx, dw/gw), math.min(sy, dh/gh)
       love.window.setMode(480*sx, 270*sy)
       state.sx, state.sy = sx, sy
       state.fullscreen = false
@@ -2017,7 +2027,11 @@ function open_options(self)
       sx, sy = window_width/480, window_height/270
       state.sx, state.sy = sx, sy
       ww, wh = window_width, window_height
-      love.window.setMode(window_width, window_height)
+      if is_handheld_device() then
+        love.window.setMode(window_width, window_height, {fullscreen = true, borderless = true})
+      else
+        love.window.setMode(window_width, window_height)
+      end
     end}
 
     self.video_button_4 = Button{group = self.ui, x = gw/2 + 129, y = gh - 125, force_update = true, button_text = 'reset video settings', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -2028,7 +2042,11 @@ function open_options(self)
       state.sx, state.sy = sx, sy
       state.fullscreen = false
       ww, wh = window_width, window_height
-      love.window.setMode(window_width, window_height)
+      if is_handheld_device() then
+        love.window.setMode(window_width, window_height, {fullscreen = true, borderless = true})
+      else
+        love.window.setMode(window_width, window_height)
+      end
     end}
 
     self.screen_shake_button = Button{group = self.ui, x = gw/2 - 57, y = gh - 100, w = 110, force_update = true, button_text = '[bg10]screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'), 
