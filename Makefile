@@ -4,9 +4,9 @@ DIST_DIR := dist
 BUILD_DIR := build
 LOVE_DIR := engine/love
 
-.PHONY: all clean lint run windows linux linux-arm
+.PHONY: all clean lint run windows linux
 
-all: windows linux linux-arm
+all: windows linux
 
 lint:
 	luacheck --codes --ranges . || true
@@ -52,18 +52,3 @@ linux: $(BUILD_DIR)/$(GAME_NAME).love $(DIST_DIR)
 	@chmod +x $(BUILD_DIR)/linux/$(GAME_NAME).sh
 	@cd $(BUILD_DIR)/linux && zip -r ../../$(DIST_DIR)/$(GAME_NAME)-linux.zip *
 	@echo "Linux build complete: $(DIST_DIR)/$(GAME_NAME)-linux.zip"
-
-linux-arm: $(BUILD_DIR)/$(GAME_NAME).love $(DIST_DIR)
-	@echo "Building Linux ARM / GPi CASE 2 bundle..."
-	@mkdir -p $(BUILD_DIR)/linux-arm
-	@cp $(BUILD_DIR)/$(GAME_NAME).love $(BUILD_DIR)/linux-arm/
-	@echo '#!/bin/bash' > $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo 'if ! command -v love &> /dev/null; then' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo '    echo "LÖVE2D is not installed. Please install love $(LOVE_VERSION) for ARM"' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo '    exit 1' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo 'fi' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo 'SCRIPT_DIR="$$(cd "$$(dirname "$$0")" && pwd)"' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@echo 'love "$$SCRIPT_DIR/$(GAME_NAME).love"' >> $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@chmod +x $(BUILD_DIR)/linux-arm/$(GAME_NAME)-gpi.sh
-	@cd $(BUILD_DIR)/linux-arm && zip -r ../../$(DIST_DIR)/$(GAME_NAME)-linux-arm.zip *
-	@echo "Linux ARM build complete: $(DIST_DIR)/$(GAME_NAME)-linux-arm.zip"

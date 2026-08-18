@@ -86,50 +86,6 @@ jobs:
           name: snkrx-love11.5-linux-x86_64
           path: dist/snkrx-love11.5-linux-x86_64.AppImage
 
-  build-linux-aarch64:
-    runs-on: ubuntu-latest
-    needs: lint
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions: {}
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
-        with:
-          persist-credentials: false
-          ref: dev
-      - name: Package .love for aarch64
-        run: |
-          mkdir -p dist
-          zip -r dist/snkrx.love conf.lua main.lua shared.lua arena.lua buy_screen.lua mainmenu.lua objects.lua player.lua enemies.lua media.lua settings.lua engine assets -x "*.git*" "engine/love/*" "builds/*" "steam/*" "*.moon" "Makefile" "build.sh"
-      - name: Build aarch64 .love bundle
-        run: |
-          cd dist
-          echo '#!/bin/sh' > snkrx.sh
-          echo '# SNKRX needs LOVE; look under common names and paths' >> snkrx.sh
-          echo 'LOVE_BIN=""' >> snkrx.sh
-          echo 'for name in love love-11.5 love-11.4 love-11.3 love-0.10.2; do' >> snkrx.sh
-          echo '  if command -v "$name" >/dev/null 2>&1; then LOVE_BIN="$name"; break; fi' >> snkrx.sh
-          echo 'done' >> snkrx.sh
-          echo 'if [ -z "$LOVE_BIN" ]; then' >> snkrx.sh
-          echo '  for dir in /usr/local/bin /usr/bin /snap/bin "$HOME/.local/bin" "$HOME/bin" /opt/love/usr/bin; do' >> snkrx.sh
-          echo '    for name in love love-11.5; do' >> snkrx.sh
-          echo '      if [ -x "$dir/$name" ]; then LOVE_BIN="$dir/$name"; break 2; fi' >> snkrx.sh
-          echo '    done' >> snkrx.sh
-          echo '  done' >> snkrx.sh
-          echo 'fi' >> snkrx.sh
-          echo 'if [ -z "$LOVE_BIN" ]; then' >> snkrx.sh
-          echo '  echo "LOVE 11.5 is required but no love executable was found in PATH." >&2' >> snkrx.sh
-          echo '  echo "Install it, e.g.:  sudo apt install love" >&2' >> snkrx.sh
-          echo '  exit 1' >> snkrx.sh
-          echo 'fi' >> snkrx.sh
-          echo 'SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"' >> snkrx.sh
-          echo 'exec "$LOVE_BIN" "$SCRIPT_DIR/snkrx.love"' >> snkrx.sh
-          chmod +x snkrx.sh
-          zip ../snkrx-love11.5-linux-aarch64.zip snkrx.love snkrx.sh
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
-        with:
-          name: snkrx-love11.5-linux-aarch64
-          path: snkrx-love11.5-linux-aarch64.zip
-
   build-love:
     runs-on: ubuntu-latest
     needs: lint
@@ -151,7 +107,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-linux, build-linux-aarch64, build-love]
+    needs: [build-windows, build-linux, build-love]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write

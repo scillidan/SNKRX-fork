@@ -10,7 +10,7 @@ Original by [adn](https://github.com/a327ex/SNKRX) · Fork by scillidan · Licen
 | Virtual resolution | 480x270 (16:9), canvas + float scaling |
 | Input | Keyboard + Mouse + Gamepad (custom engine Input) |
 | Key rebinding | None (hardcoded in main.lua), listed in TODO |
-| Build targets | Windows, Linux, Linux-ARM, Web (love-js) |
+| Build targets | Windows, Linux, Web (love-js) |
 
 ---
 
